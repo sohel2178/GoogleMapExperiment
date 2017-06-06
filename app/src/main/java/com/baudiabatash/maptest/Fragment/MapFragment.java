@@ -18,8 +18,10 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.io.IOException;
 import java.util.List;
@@ -31,7 +33,13 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         View.OnClickListener{
     private GoogleMap mMap;
     private EditText etAddress;
-    private Button btnGo;
+    private Button btnGo,btnZoom;
+
+    private LatLng dhaka;
+    private LatLng gazipur;
+    private LatLng tangail;
+    private LatLng sirajganj;
+    private LatLng latLng;
 
 
     public MapFragment() {
@@ -46,6 +54,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         View view= inflater.inflate(R.layout.fragment_map, container, false);
         etAddress = (EditText) view.findViewById(R.id.etAddress);
         btnGo = (Button) view.findViewById(R.id.btn_go);
+        btnZoom = (Button) view.findViewById(R.id.zoom);
 
         SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager()
                 .findFragmentById(R.id.map);
@@ -59,13 +68,36 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         btnGo.setOnClickListener(this);
+        btnZoom.setOnClickListener(this);
+        //btnZoom = (Button) view.findViewById(R.id.zoom);
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
 
-        gotoLocationWithZoom(23.781541, 90.363739,16);
+        dhaka = new LatLng(23.777176,90.399452);
+        gazipur = new LatLng(23.911522,90.388962);
+        tangail = new LatLng(24.244968,89.911305);
+        sirajganj = new LatLng(24.452646,89.681621);
+
+        test();
+
+        /*gotoLocationWithZoom( 28.592140,77.046051,12);*/
+
+        latLng= new LatLng(23.781541, 90.363739);
+
+        /*mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(
+                new LatLng(-18.142, 178.431), 2));
+
+        // Polylines are useful for marking paths and routes on the map.
+        mMap.addPolyline(new PolylineOptions().geodesic(true)
+                .add(new LatLng(-33.866, 151.195))  // Sydney
+                .add(new LatLng(-18.142, 178.431))  // Fiji
+                .add(new LatLng(21.291, -157.821))  // Hawaii
+                .add(new LatLng(37.423, -122.091))  // Mountain View
+        );*/
 
        /* LatLng sydney = new LatLng(-34, 151);
         mMap.addMarker(new MarkerOptions().position(sydney).title("Marker in Sydney"));
@@ -80,24 +112,52 @@ public class MapFragment extends Fragment implements OnMapReadyCallback,
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLoc,zoom));
     }
 
+    private void test(){
+        MarkerOptions option1 = new MarkerOptions().position(dhaka).title("Dhaka");
+        MarkerOptions option2 = new MarkerOptions().position(gazipur).title("Gazipur");
+        MarkerOptions option3 = new MarkerOptions().position(tangail).title("Tangail");
+        MarkerOptions option4 = new MarkerOptions().position(sirajganj).title("Sirajgang");
+        mMap.addMarker(option1);
+        mMap.addMarker(option2);
+        mMap.addMarker(option3);
+        mMap.addMarker(option4);
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(tangail,10));
+    }
+
     @Override
     public void onClick(View v) {
-        String location = etAddress.getText().toString().trim();
-        Geocoder geocoder = new Geocoder(getActivity());
+        switch (v.getId()){
+            case R.id.btn_go:
+                String location = etAddress.getText().toString().trim();
+                Geocoder geocoder = new Geocoder(getActivity());
 
-        try {
-            List<Address> addressList = geocoder.getFromLocationName(location,1);
-            Address address = addressList.get(0);
-            String locality = address.getLocality();
+                try {
+                    List<Address> addressList = geocoder.getFromLocationName(location,1);
+                    Address address = addressList.get(0);
+                    String locality = address.getLocality();
 
-            Toast.makeText(getActivity(), locality, Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), locality, Toast.LENGTH_SHORT).show();
 
-            double lat = address.getLatitude();
-            double lng = address.getLongitude();
+                    double lat = address.getLatitude();
+                    double lng = address.getLongitude();
 
-            gotoLocationWithZoom(lat,lng,15);
-        } catch (IOException e) {
-            e.printStackTrace();
+                    gotoLocationWithZoom(lat,lng,15);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                break;
+
+            case R.id.zoom:
+                if(mMap !=null){
+
+                    mMap.addMarker(new MarkerOptions()
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.location))
+                            .anchor(0.0f, 1.0f) // Anchors the marker on the bottom left
+                            .position(latLng));
+                }
+                break;
+
         }
+
     }
 }
